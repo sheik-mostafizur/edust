@@ -12,56 +12,21 @@ import {
 } from "@/components/ui";
 import { LeftPanel } from "./left-panel";
 import useWindowSize from "./hooks/use-window-resize";
-import { useEditSiteMutation } from "@/app/api/v0/organizations";
-import { toast } from "@/hooks/shadcn-ui";
 
-export const GrapesjsShadcnUI = () => {
+export const GrapesjsShadcnUI = (props) => {
+  const { onEditor } = props;
   const { width: windowWidth } = useWindowSize();
   const editorRef = useRef<Editor | null>(null);
 
-  const [saveGsData] = useEditSiteMutation();
-
-  const onEditor = async (editor: Editor) => {
+  const gsOnEditor = async (editor: Editor) => {
     if (!editor) {
       console.error("Editor is not initialized");
       return;
     }
 
-    editor.Commands.add("save-db", {
-      run: async () => {
-        const pages = editor.Pages.getAll().map((page) => {
-          const component = page.getMainComponent();
-          return {
-            id: page.getId(),
-            name: page.getName(),
-            html: editor.getHtml({ component }),
-            css: editor.getCss({ component }),
-          };
-        });
-
-        saveGsData({
-          assets: JSON.stringify(editor.getProjectData()),
-          pages: JSON.stringify(pages),
-        })
-          .unwrap()
-          .then((res) => {
-            if (res?.status) {
-              toast({
-                variant: "success",
-                title: res?.message,
-              });
-            }
-          })
-          .catch((error) => {
-            toast({
-              variant: "destructive",
-              title: error?.data?.message,
-            });
-          });
-      },
-    });
-
     editorRef.current = editor;
+
+    await onEditor(editor);
 
     return customOnEditor(editor);
   };
@@ -78,7 +43,7 @@ export const GrapesjsShadcnUI = () => {
         grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css" // css cdn
         // GrapesJS init options
         options={options(editorRef)}
-        onEditor={onEditor}
+        onEditor={gsOnEditor}
       >
         <ResizablePanelGroup
           direction="horizontal"
@@ -96,7 +61,7 @@ export const GrapesjsShadcnUI = () => {
                     : 12
             }
             minSize={8}
-            className="w-[200px] h-full bg-white"
+            className="h-full w-[200px] bg-white"
           >
             <LeftPanel />
           </ResizablePanel>
@@ -104,12 +69,12 @@ export const GrapesjsShadcnUI = () => {
           {/* end Left Panel */}
 
           {/* Start Middle Area */}
-          <ResizablePanel minSize={30} className="flex-1 h-full">
+          <ResizablePanel minSize={30} className="h-full flex-1">
             <header>
               <TopControllers />
             </header>
             <main className="h-full">
-              <Canvas className="bg-slate-200 border-b-[42px] border-transparent" />
+              <Canvas className="border-b-[42px] border-transparent bg-slate-200" />
             </main>
           </ResizablePanel>
           {/* End Middle Area */}
@@ -127,7 +92,7 @@ export const GrapesjsShadcnUI = () => {
                     : 13
             }
             minSize={8}
-            className="w-[200px] h-full bg-white"
+            className="h-full w-[200px] bg-white"
           >
             <RightPanel />
           </ResizablePanel>
