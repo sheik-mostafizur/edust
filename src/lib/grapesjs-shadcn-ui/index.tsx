@@ -14,7 +14,7 @@ import { LeftPanel } from "./left-panel";
 import useWindowSize from "./hooks/use-window-resize";
 
 export const GrapesjsShadcnUI = (props) => {
-  const { onEditor } = props;
+  const { onEditor, optionsCustomize } = props;
   const { width: windowWidth } = useWindowSize();
   const editorRef = useRef<Editor | null>(null);
 
@@ -42,7 +42,7 @@ export const GrapesjsShadcnUI = (props) => {
         // This is an optional prop, you can always import the CSS directly in your JS if you wish.
         grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css" // css cdn
         // GrapesJS init options
-        options={options(editorRef)}
+        options={{ ...options(editorRef), ...optionsCustomize(editorRef) }}
         onEditor={gsOnEditor}
       >
         <ResizablePanelGroup
